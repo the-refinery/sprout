@@ -115,11 +115,19 @@ trait SystemMailerInstructionsTrait
                 $parsedEmail = Craft::$app->getView()->renderObjectTemplate(
                     $potentialRecipient->emailTemplateString, $templateVariables
                 );
-
-                $potentialRecipient = $this->updateDynamicRecipient($potentialRecipient, $parsedEmail);
+                if(str_contains($parsedEmail, ',')) {
+                    $emails = explode(',', $parsedEmail);
+                    foreach ($emails as $email) {
+                        $newRecipient = new MailingListRecipient(['email' => trim($email)]);
+                        $recipients[] = $newRecipient;
+                    }
+                } else {
+                    $potentialRecipient = $this->updateDynamicRecipient($potentialRecipient, $parsedEmail);
+                    $recipients[] = $potentialRecipient;
+                }
+            } else {
+                $recipients[] = $potentialRecipient;
             }
-
-            $recipients[] = $potentialRecipient;
         }
 
         return $recipients;
